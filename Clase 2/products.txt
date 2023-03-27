@@ -1,0 +1,11 @@
+[
+	{
+		"id": 1,
+		"title": "Lapicera",
+		"description": "Usala para explayar tus ideas",
+		"price": 50,
+		"thumbnail": "404 Not Found",
+		"code": 101001,
+		"stock": 10
+	}
+]
