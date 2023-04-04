@@ -1,0 +1,29 @@
+[
+	{
+		"id": 1,
+		"title": "Lapicera",
+		"description": "Usala para explayar tus ideas",
+		"price": 50,
+		"thumbnail": "404 Not Found",
+		"code": 101001,
+		"stock": 10
+	},
+	{
+		"id": 2,
+		"title": "Goma",
+		"description": "Usala para borrar tus errores",
+		"price": 40,
+		"thumbnail": "404 Not Found",
+		"code": 101002,
+		"stock": 8
+	},
+	{
+		"id": 3,
+		"title": "Corrector",
+		"description": "Usalo para borrar tus errores",
+		"price": 60,
+		"thumbnail": "404 Not Found",
+		"code": 101003,
+		"stock": 5
+	}
+]
