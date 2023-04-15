@@ -1,0 +1,28 @@
+[
+	{
+		"id": 1,
+		"title": "Goma",
+		"description": "Para borrar tus errores",
+		"price": 30,
+		"thumbnails": [
+			""
+		],
+		"code": "101101",
+		"stock": 10,
+		"status": true,
+		"category": "Gomas"
+	},
+	{
+		"id": 2,
+		"title": "Lapiz",
+		"description": "Desborda tu imaginacion",
+		"price": 30,
+		"thumbnails": [
+			""
+		],
+		"code": "101100",
+		"stock": 20,
+		"status": true,
+		"category": "Lapices"
+	}
+]
