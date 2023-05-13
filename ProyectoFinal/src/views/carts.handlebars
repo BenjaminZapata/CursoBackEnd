@@ -1,0 +1,11 @@
+<section>
+  <h2>Cart #{{id}}</h2>
+  {{#unless products}}
+    <p>No hay items agregados al carrito</p>
+  {{/unless}}
+  {{#if products}}
+    {{#each products}}
+      <p>{{this.codigo}} - {{this.nombre}} - x{{this.cantidad}}</p>
+    {{/each}}
+  {{/if}}
+</section>

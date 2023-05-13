@@ -1,59 +1,107 @@
-const { Router } = require('express')
-const ProductManager = require('../ProductManager.js')
+import { Router } from "express"
+import productModel from '../models/product.model.js'
 
 const router = Router()
-const productManager = new ProductManager()
 
-router.get('/', (req, resp) => {
-	let products = productManager.getProducts()
-	let limit = req.query.limit
-	if (products.length == 0) resp.status(200).send("No hay ningun producto en la lista")
-	if (limit){
-		let newProducts = products.slice(0, limit)
-		products = newProducts
-	}
-	resp.status(200).send(products)
+// MOSTRAR PRODUCTOS
+router.get('/', async (req, res) => {
+  // Pedimos el numero de la pagina por query. Por defecto sera la pagina 1
+  let page = parseInt(req.query.page)
+  if (!page) page = 1
+
+  // Pedimos la cantidad de productos a mostrar por pagina. Por defecto sera 5
+  let limit = parseInt(req.query.limit)
+  if (!limit) limit = 5
+
+  // Pedimos el orden. Por defecto sera asc
+  let obj = {}
+  let sortOption = req.query.sort
+  if (sortOption == 'asc' || sortOption == 'desc'){
+    obj.precioVenta = sortOption
+  } else if (sortOption == 'cat'){
+    obj.categoria = 1
+  } else if (sortOption == 'stock'){
+    obj.stock = -1
+  }
+
+  // Obtenemos la informacion y paginamos
+  const data = await productModel.paginate({}, { page, limit, sort: obj, lean: true})
+  // Seteamos los links para la pagina anterior y siguiente, en caso de que existan
+  data.prevLink = data.hasPrevPage ? `/productos?page=${data.prevPage}&limit=${limit}${sortOption ? `&sort=${sortOption}` : ``}` : ''
+  data.nextLink = data.hasNextPage ? `/productos?page=${data.nextPage}&limit=${limit}${sortOption ? `&sort=${sortOption}` : ``}` : ''
+  res.render('products', data)
 })
 
-router.get('/:pid', (req, resp) => {
-	let pid = Number (req.params.pid)
-	let product = productManager.getProductByID(pid)
-	if (!product) resp.status(400).send(`No existe el producto con id ${id}`)
-	else resp.status(200).send(product)
+// MOSTRAR UN PRODUCTO ESPECIFICO
+router.get('/:pid', async (req, res) => {
+  let pid = req.params.pid
+  let productData = await productModel.find({ codigo: {$eq: pid} })
+  res.render('product', productData[0])
 })
 
-router.post('/', (req, resp) => {
-	let { title, description, code, price, stock, category, thumbnails } = req.query
-	price = Number (price), stock = Number (stock)
-	let productStatus = true
-	if (!title || !description || !code || !price || !stock || !category){
-		resp.status(400).send("No se han completado todos los campos obligatorios")
-	}
-	let addStatus = productManager.addProduct(title, description, price, thumbnails, code, stock, productStatus, category)
-	if (addStatus) resp.status(201).send("Producto creado con exito")
-	else resp.status(400).send(`Ya existe un producto con code ${code}`)
+// CREAR UN PRODUCTO
+router.post('/', async (req, res) => {
+  // Desestructuramos el query con los parametros y transformamos stock y precioVenta a numero
+  let { codigo, nombre, categoria, stock, precioVenta } = req.query
+  stock = Number (stock), precioVenta = Number (precioVenta)
+  // Chequeamos que no falte ningun campo
+  if (!codigo || !nombre || !categoria || !precioVenta || !stock){
+    res.status(400).send("Falta completar algun campo")
+    return
+  }
+  // Chequeamos que no exista un producto con ese codigo
+  let exists = await productModel.find({ codigo: {$eq: codigo}})
+  if (exists.length != 0){
+    res.status(400).send(`Ya existe un producto con codigo ${codigo}`)
+    return
+  }
+  // Finalmente creamos el producto y lo guardamos a la DB
+  let producto = {
+    codigo: codigo,
+    nombre: nombre,
+    categoria: categoria,
+    precioVenta: precioVenta,
+    stock: stock
+  }
+  await productModel.create( producto )
+  res.status(200).send(`Producto con codigo ${codigo} creado con exito`)
 })
 
-router.put('/:pid', (req, resp) => {
-	let pid = Number (req.params.pid)
-	const newProperties = req.body
-	const filteredProperties = Object.fromEntries(Object.entries(newProperties).filter(([key, value]) => value !== undefined))
-	if (filteredProperties["price"]){
-		filteredProperties["price"] = Number (filteredProperties["price"])
-	}
-	if (filteredProperties["stock"]){
-		filteredProperties["stock"] = Number (filteredProperties["stock"])
-	}
-	const status = productManager.updateProductByID(pid, filteredProperties)
-	if (status)	resp.status(200).send(`Producto con id ${pid} modificado correctamente`)
-	resp.status(400).send(`No existe el producto con id ${pid}`)
+// ACTUALIZAMOS UN PRODUCTO
+router.put('/:pid', async (req, res) => {
+  // Verificamos que se hayan ingresado bien los datos
+  let pid = req.params.pid
+  let { nombre, categoria, precioVenta, stock } = req.query
+  precioVenta = Number (precioVenta), stock = Number(stock)
+  // Chequeamos si existe el producto
+  let data = await productModel.find({ codigo: {$eq: pid}})
+  if (data.length == 0){
+    res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Creamos una copia del producto y reemplazamos los campos ingresados
+  let product = data[0]
+  if (nombre) product.nombre = nombre
+  if (categoria) product.categoria = categoria
+  if (precioVenta) product.precioVenta = precioVenta
+  if (stock) product.stock = stock
+  // Actualizamos la DB
+  await productModel.updateOne({ codigo: pid }, product )
+  res.send(`Producto con codigo ${codigo} actualizado con exito`)
 })
 
-router.delete('/:pid', (req, resp) => {
-	let pid = Number (req.params.pid)
-	let status = productManager.deleteProduct(pid)
-	if (status) resp.status(200).send(`Producto eliminado con exito`)
-	else resp.status(400).send(`No existe un producto con id ${pid}`)
+// ELIMINAMOS UN PRODUCTO
+router.delete('/:pid', async (req, res) => {
+  let pid = req.params.pid
+  // Verificamos que exista el producto con dicho codigo
+  let exists = await productModel.find({ codigo: {$eq: pid}})
+  if (exists.length == 0){
+    res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Eliminamos el producto de la DB
+  await productModel.deleteOne({ codigo: {$eq: pid}})
+  res.send(`Producto con codigo ${pid} eliminado con exito`)
 })
 
-module.exports = router
+export default router

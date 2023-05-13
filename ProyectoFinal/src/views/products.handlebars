@@ -1,0 +1,40 @@
+<section>
+  <header>
+    <h6>Mostrando {{limit}} de {{totalDocs}} productos</h6>
+    <form id="sortForm" method="get">
+      <label>Ordenar por</label>
+      <select name="sort">
+        <option value="">Seleccione una opcion</option>
+        <option value="asc">Precio ascendente</option>
+        <option value="desc">Precio descendente</option>
+        <option value="cat">Por categoria</option>
+        <option value="stock">Por stock</option>
+      </select>
+      <label>Mostrar</label>
+      <select name="entries">
+        <option value="">Seleccione una cantidad</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
+      <button>Filtrar</button>
+    </form>
+  </header>
+  <ol>
+    {{#each docs}}
+      <li>
+        {{this.codigo}} - {{this.nombre}} - {{this.categoria}} - ${{this.precioVenta}} - STOCK: {{this.stock}}
+      </li>
+    {{/each}}
+  </ol>
+  <div>
+    {{#if hasPrevPage}}
+      <a href="{{prevLink}}">Anterior</a>
+    {{/if}}
+    {{#if hasNextPage}}
+      <a href="{{nextLink}}">Siguiente</a>
+    {{/if}}
+  </div>
+</section>
+
+<script src="/products.js"></script>
