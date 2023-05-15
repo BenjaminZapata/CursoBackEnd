@@ -1,9 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongoosePaginate from 'mongoose-paginate-v2'
 
 const cartSchema = mongoose.Schema({
   id: String,
-  products: { type: Array, default: []}
+  productos: [{
+    producto: {
+    type: Schema.Types.ObjectId,
+    ref: 'products'
+    },
+    cantidad: Number
+  }]
+})
+
+cartSchema.pre('find', function() {
+  this.populate('productos.producto').lean()
 })
 
 cartSchema.plugin(mongoosePaginate)
