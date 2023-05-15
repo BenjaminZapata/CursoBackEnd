@@ -46,7 +46,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
   // Chequeamos que el producto no exista en el carrito. Si existe, solo incrementamos la cantidad
   let index = cartData[0].productos.findIndex( p => p.producto.codigo === pid)
   if (index != -1){
-    console.log(productData[0].stock, cartData[0].productos[index].cantidad)
+    // Vemos si el stock es igual a la cantidad añadida en el carrito
     if (productData[0].stock == cartData[0].productos[index].cantidad){
       res.status(200).send(`Se alcanzo el limite de stock del producto con codigo ${pid}`)
       return
@@ -102,6 +102,56 @@ router.delete('/:cid/product/:pid', async (req, res) => {
   cartCopy[0].productos = array
   await cartModel.updateOne({id: cid}, cartCopy[0])
   res.status(200).send(`Producto de codigo ${pid} eliminado del carrito con id ${cid} con exito`)
+})
+
+router.put('/:cid/products/:pid', async (req, res) => {
+  let cid = req.params.cid
+  let pid = req.params.pid
+  let cantidad = req.body.cantidad
+  // Primero chequeamos que exista el carrito
+  let cartCopy = await cartModel.find({ id: {$eq: cid}})
+  if (cartCopy.length == 0){
+    res.status(404).send(`No existe el carrito con id ${cid}`)
+    return
+  }
+  // Copiamos el contenido del carrito en un array
+  let array = cartCopy[0].productos
+  // Chequeamos que exista el producto en el carrito
+  let index = array.findIndex( e => e.producto.codigo == pid)
+  if (index == -1){
+    res.status(404).send(`No existe el producto de codigo ${pid} en el carrito de id ${cid}`)
+    return
+  }
+  // Chequeamos que no se intenten agregar mas cantidad que el stock disponible
+  if (array[index].producto.stock < cantidad){
+    res.status(400).send(`El numero ingresado es mayor al stock del producto de codigo ${pid}`)
+    return
+  }
+  // Actualizamos la copia y la DB
+  array[index].cantidad = cantidad
+  cartCopy[0].productos = array
+  await cartModel.updateOne({id: cid}, cartCopy[0])
+  res.status(200).send(`Se ha actualizado la cantidad del producto de codigo ${pid} del carrito ${cid}`)
+})
+
+// VACIAR UN CARRITO
+router.delete('/:cid', async (req, res) => {
+  let cid = req.params.cid
+  // Primero chequeamos que exista el carrito
+  let cartCopy = await cartModel.find({ id: {$eq: cid}})
+  if (cartCopy.length == 0){
+    res.status(404).send(`No existe el carrito con id ${cid}`)
+    return
+  }
+  // Chequeamos si el carrito ya se encuentra vacio
+  if (cartCopy[0].productos.length == 0){
+    res.status(200).send("El carrito ya se encuentra vacio")
+    return
+  }
+  // Vaciamos el array de productos de la copia y actualizamos la DB
+  cartCopy[0].productos = []
+  await cartModel.updateOne({id: cid}, cartCopy[0])
+  res.status(200).send(`Carrito de codigo ${cid} vaciado con exito`)
 })
 
 export default router

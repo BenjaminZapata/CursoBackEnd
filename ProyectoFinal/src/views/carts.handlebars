@@ -8,4 +8,13 @@
       <p>{{this.producto.codigo}} - {{this.producto.nombre}} - ${{this.producto.precioVenta}} - x{{this.cantidad}}</p>
     {{/each}}
   {{/if}}
+  <footer>
+    <form id="cartForm">
+      <label>Agrege un producto por codigo: </label>
+      <input name="codigo">
+      <button type="submit">Agregar</button>
+    </form>
+  </footer>
 </section>
+
+<script src="/carts.js" cartId="{{id}}"></script>
