@@ -8,3 +8,7 @@ addEventListener("submit", e => {
   if (entries) q += `limit=${entries}`
   window.location.replace(`/productos?${q}&page=1`)
 })
+
+function logout () {
+  window.location.replace('/logout')
+}
