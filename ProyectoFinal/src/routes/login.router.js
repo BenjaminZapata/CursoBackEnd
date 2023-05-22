@@ -1,5 +1,4 @@
 import { Router } from "express"
-import session from "express-session"
 import userModel from '../models/user.model.js'
 
 const router = Router()
@@ -21,7 +20,7 @@ router.get('/login/:user/:password', async (req, res) => {
   let password = req.params.password
   let userData = await userModel.find({ usuario: {$eq: user}, contraseña: {$eq: password}})
   if (userData.length == 0){
-    return res.status(400).send('El usuario no existe o los datos son invalidos')
+    return res.status(401).send('El usuario no existe o los datos son invalidos')
   }
   req.session.user = userData
   res.redirect('/api/products')

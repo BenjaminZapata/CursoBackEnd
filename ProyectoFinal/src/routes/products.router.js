@@ -3,6 +3,11 @@ import productModel from '../models/product.model.js'
 
 const router = Router()
 
+const adminAuth = (req, res, next) => {
+  if (req.session.rol == 'admin') return next()
+  return res.status(403).send("ERROR DE PERMISOS: No eres administrador")
+}
+
 // MOSTRAR PRODUCTOS
 router.get('/', async (req, res) => {
   // Pedimos el numero de la pagina por query. Por defecto sera la pagina 1
@@ -37,11 +42,13 @@ router.get('/', async (req, res) => {
 router.get('/:pid', async (req, res) => {
   let pid = req.params.pid
   let productData = await productModel.find({ codigo: {$eq: pid} })
+  // Agregamos la informacion del usuario
+  productData[0].user = req.session.user[0]
   res.render('product', productData[0])
 })
 
 // CREAR UN PRODUCTO
-router.post('/', async (req, res) => {
+router.post('/', adminAuth, async (req, res) => {
   // Desestructuramos el query con los parametros y transformamos stock y precioVenta a numero
   let { codigo, nombre, categoria, stock, precioVenta } = req.query
   stock = Number (stock), precioVenta = Number (precioVenta)
@@ -69,7 +76,7 @@ router.post('/', async (req, res) => {
 })
 
 // ACTUALIZAMOS UN PRODUCTO
-router.put('/:pid', async (req, res) => {
+router.put('/:pid', adminAuth, async (req, res) => {
   // Verificamos que se hayan ingresado bien los datos
   let pid = req.params.pid
   let { nombre, categoria, precioVenta, stock } = req.query
@@ -92,7 +99,7 @@ router.put('/:pid', async (req, res) => {
 })
 
 // ELIMINAMOS UN PRODUCTO
-router.delete('/:pid', async (req, res) => {
+router.delete('/:pid', adminAuth, async (req, res) => {
   let pid = req.params.pid
   // Verificamos que exista el producto con dicho codigo
   let exists = await productModel.find({ codigo: {$eq: pid}})

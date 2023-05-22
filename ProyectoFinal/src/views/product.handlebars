@@ -1,5 +1,11 @@
+<nav style="display: flex; align-items: center; gap: 1em;">
+  <h1>Bienvenido, {{user.rol}} {{user.usuario}}</h1>
+  <button onclick="logout()">Logout</button>
+</nav>
 <section>
   <h2>{{this.nombre}}</h2>
   <p>{{this.codigo}} - {{this.categoria}}</p>
   <h3>${{this.precioVenta}}</h3>
+
+  <a href="/api/products"><button>Volver</button></a>
 </section>

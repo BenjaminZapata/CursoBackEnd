@@ -76,6 +76,8 @@ router.get('/:cid', async (req, res) => {
     res.status(404).send(`No existe el carrito con id ${cid}`)
     return
   }
+  // Agregamos la informacion del usuario
+  data[0].user = req.session.user[0]
   res.render('carts', data[0])
 })
 
@@ -104,6 +106,7 @@ router.delete('/:cid/product/:pid', async (req, res) => {
   res.status(200).send(`Producto de codigo ${pid} eliminado del carrito con id ${cid} con exito`)
 })
 
+// MODIFICAMOS LA CANTIDAD DE UN PRODUCTO EN EL CARRITO
 router.put('/:cid/products/:pid', async (req, res) => {
   let cid = req.params.cid
   let pid = req.params.pid
