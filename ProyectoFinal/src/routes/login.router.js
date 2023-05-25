@@ -1,5 +1,6 @@
 import { Router } from "express"
 import userModel from '../models/user.model.js'
+import { createHash, isValidPassword } from "../utils.js"
 
 const router = Router()
 
@@ -18,9 +19,13 @@ router.get('/register', (req, res) => {
 router.get('/login/:user/:password', async (req, res) => {
   let user = req.params.user
   let password = req.params.password
-  let userData = await userModel.find({ usuario: {$eq: user}, contraseña: {$eq: password}})
+  let userData = await userModel.find({ usuario: {$eq: user}})
   if (userData.length == 0){
-    return res.status(401).send('El usuario no existe o los datos son invalidos')
+    return res.status(401).send('El usuario no existe')
+  }
+  let valid = isValidPassword(userData[0], password)
+  if (!valid){
+    return res.status(401).send('Los datos ingresados son incorrectos')
   }
   req.session.user = userData
   res.redirect('/api/products')
@@ -37,16 +42,18 @@ router.get('/logout', (req, res) => {
 })
 
 // REGISTRAR UN USUARIO
-router.post('/register/:user/:password', async (req, res) => {
+router.post('/register/:user/:email/:password', async (req, res) => {
   let user = req.params.user
   let password = req.params.password
-  let userData = await userModel.find({ usuario: {$eq: user}})
+  let email = req.params.email
+  let userData = await userModel.find({$or: [{usuario: {$eq: user}}, {email: {$eq: email}}]})
   let userExists = userData.length == 1 ? true : false
   if (userExists){
-    res.status(200).send('Ya existe un usuario con ese nombre')
+    res.status(200).send('Ya existe un usuario con ese nombre o email')
     return
   }
-  await userModel.create({ usuario: user, contraseña: password })
+  let hashedPassword = createHash(password)
+  await userModel.create({ usuario: user, email: email, contraseña: hashedPassword })
   res.status(200).send('Usuario creado con exito')
 })
 
