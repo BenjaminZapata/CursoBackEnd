@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   // Obtenemos la informacion y paginamos
   const data = await productModel.paginate({}, { page, limit, sort: obj, lean: true})
   // Agregamos la informacion del usuario
-  data.user = req.session.user[0]
+  data.user = req.session.user
   // Seteamos los links para la pagina anterior y siguiente, en caso de que existan
   data.prevLink = data.hasPrevPage ? `/api/products?page=${data.prevPage}&limit=${limit}${sortOption ? `&sort=${sortOption}` : ``}` : ''
   data.nextLink = data.hasNextPage ? `/api/products?page=${data.nextPage}&limit=${limit}${sortOption ? `&sort=${sortOption}` : ``}` : ''

@@ -7,6 +7,8 @@ import __dirname from './src/utils.js'
 import loginRouter from './src/routes/login.router.js'
 import cartsRouter from './src/routes/carts.router.js'
 import productsRouter from './src/routes/products.router.js'
+import initializePassport from './src/passport.config.js'
+import passport from 'passport'
 
 const uri = 'mongodb+srv://benjazapata:BetoMongo1991@db.loenabf.mongodb.net/'
 
@@ -30,6 +32,10 @@ const auth = (req, res, next) => {
   if (req.session.user) return next()
   return res.render('login')
 }
+
+initializePassport()
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

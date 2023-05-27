@@ -1,6 +1,7 @@
 import { Router } from "express"
 import userModel from '../models/user.model.js'
 import { createHash, isValidPassword } from "../utils.js"
+import passport from "passport"
 
 const router = Router()
 
@@ -29,6 +30,14 @@ router.get('/login/:user/:password', async (req, res) => {
   }
   req.session.user = userData
   res.redirect('/api/products')
+})
+
+// INICIAR SESION CON GITHUB
+router.get('/github', passport.authenticate('github', { scope: ["usuario:email"] }, (req, res) => {}))
+
+router.get('/login/github', passport.authenticate('github', { failureRedirect: '/login'}), async (req, res) =>{
+  req.session.user = req.user,
+  res.redirect('/')
 })
 
 // DESCONECTARSE DE LA SESION
