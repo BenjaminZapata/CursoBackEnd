@@ -25,7 +25,7 @@ app.use(session({
   }),
   secret: 'libreriapop',
   resave: true,
-  saveUnitialized: true
+  saveUninitialized: true
 }))
 
 const auth = (req, res, next) => {
