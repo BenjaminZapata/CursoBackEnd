@@ -17,14 +17,14 @@ router.get('/register', (req, res) => {
 })
 
 // INICIAR SESION
-router.get('/login/:user/:password', async (req, res) => {
-  let user = req.params.user
+router.get('/login/:email/:password', async (req, res) => {
+  let email = req.params.email
   let password = req.params.password
-  let userData = await userModel.find({ usuario: {$eq: user}})
-  if (userData.length == 0){
+  let userData = await userModel.findOne({ email: {$eq: email}})
+  if (!userData){
     return res.status(401).send('El usuario no existe')
   }
-  let valid = isValidPassword(userData[0], password)
+  let valid = isValidPassword(userData, password)
   if (!valid){
     return res.status(401).send('Los datos ingresados son incorrectos')
   }
