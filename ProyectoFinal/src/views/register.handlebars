@@ -1,20 +1,28 @@
 <section>
   <h3>Registro</h3>
-  <form id="registerForm">
-    <label>Usuario</label>
-    <input>
+  <form id="registerForm" action="/register" method="post">
+    <label>Nombre</label>
+    <input type="text" name="first_name">
+    <br>
+    <br>
+    <label>Apellido</label>
+    <input type="text" name="lastt_name">
     <br>
     <br>
     <label>Email</label>
-    <input type="email">
+    <input type="email" name="email">
+    <br>
+    <br>
+    <label>Edad</label>
+    <input type="text" name="age">
     <br>
     <br>
     <label>Contraseña</label>
-    <input type="password">
+    <input type="password" name="password">
     <br>
     <br>
     <button>Crear usuario</button>
   </form>
 </section>
 
-<script src="/register.js"></script>
+{{!-- <script src="/register.js"></script> --}}
