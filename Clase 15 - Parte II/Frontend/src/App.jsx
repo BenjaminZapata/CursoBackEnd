@@ -1,22 +1,48 @@
 import { useState } from 'react'
+import axios from 'axios'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [input, setInput] = useState({
+    nombre: '',
+    apellido: '',
+    email: ''
+  })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      await axios('http://localhost:8080/api/users', {
+        method: 'POST',
+        data: JSON.stringify(input),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    } catch(err) {
+      console.log(err.message)
+    }
+  }
+
+  const handleInputChange = (e) => {
+    setInput(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    console.log(input)
+  }
+
 
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <div>
+        <h1>Registrar nuevo usuario</h1>
+        <form onSubmit={handleSubmit}>
+          <label>Nombre</label>
+          <input name='nombre' value={input.nombre} onChange={handleInputChange}></input>
+          <label>Apellido</label>
+          <input name='apellido' value={input.apellido} onChange={handleInputChange}></input>
+          <label>Email</label>
+          <input name='email' value={input.email} onChange={handleInputChange}></input>
+          <input type='submit'/>
+        </form>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
