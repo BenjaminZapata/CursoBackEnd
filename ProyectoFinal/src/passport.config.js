@@ -1,57 +1,33 @@
 import passport from "passport"
-import { createHash, isValidPassword } from "./utils.js"
-import local from "passport-local"
 import GitHubStrategy from "passport-github2"
+import jwt, { ExtractJwt } from 'passport-jwt'
 import userModel from "./models/user.model.js"
+import { PRIVATE_KEY } from "./utils.js"
 
-const LocalStrategy = local.Strategy
 const appID = "339668"
 const clientID = "Iv1.bc3be33234a7b53b"
 const clientSecret = "78bf92021873755ff1a982eadcdf762012bd08eb"
 
+const JWTStrategy = jwt.Strategy
+
+const cookieExtractor = req => {
+  const token = (req && req.cookies) ? req.cookies['testCookie'] : null
+  return token
+}
+
 const initializePassport = () => {
 
-  passport.use('register', new LocalStrategy({
-    passReqToCallback: true,
-    usernameField: 'email'
-  }, async (req, username, password, done) => {
-    const {first_name, last_name, email, age } = req.body
+  passport.use('jwt', new JWTStrategy({
+    jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+    secretOrKey: PRIVATE_KEY
+  }, async (jwt_payload, done) => {
     try {
-      const user = await userModel.findOne({email: username})
-      if(user) {
-        console.log("Ya existe un usuario con ese email");
-        return done(null, false)
-      }
-      const newUser = {
-        first_name,
-        last_name,
-        email,
-        age,
-        password: createHash(password)
-      }
-      const result = await userModel.create(newUser)
-      return done(null, result)
+      return done(null, jwt_payload)
     } catch (error) {
-      return done("Error al obtener el usuario: " + error)
+      return done(error)
     }
   }))
-
-  passport.use('login', new LocalStrategy({
-    usernameField: 'email'
-  }, async (username, password, done) => {
-    try {
-      const user = await userModel.findOne({email: username})
-      if(!user) {
-        console.log("No existe un usuario con ese email");
-        return done(null, user)
-      }
-      if(!isValidPassword(user, password)) return done(null, false)
-      return done(null, user)
-    } catch (error) {
-      return done("Error al validar el usuario: " + error)
-    }
-  }))
-
+  
   // passport.use('github', new GitHubStrategy({
   //   clientID: clientID,
   //   clientSecret: clientSecret,
@@ -73,14 +49,14 @@ const initializePassport = () => {
   //   }
   // }))
 
-  passport.serializeUser((user, done) => {
-    done(null, user)
-  })
+  // passport.serializeUser((user, done) => {
+  //   done(null, user)
+  // })
 
-  passport.deserializeUser(async (data, done) => {
-    const user = data
-    done(null, user)
-  })
+  // passport.deserializeUser(async (data, done) => {
+  //   const user = data
+  //   done(null, user)
+  // })
 }
 
 export default initializePassport
