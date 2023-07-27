@@ -1,4 +1,5 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema }  from 'mongoose'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const cartSchema = mongoose.Schema({
   id: String,
@@ -11,7 +12,7 @@ const cartSchema = mongoose.Schema({
   }]
 })
 
-cartSchema.pre('find', function() {
+cartSchema.pre('findOne', function() {
   this.populate('products.product').lean()
 })
 

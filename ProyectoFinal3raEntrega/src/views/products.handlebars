@@ -1,5 +1,5 @@
 <nav style="display: flex; align-items: center; gap: 1em;">
-  <h1>Bienvenido, {{user.role}} {{user.email}}</h1>
+  <h1>Bienvenido, {{user.role}} <a href="/api/users/profile" style="color: #464646 !important; text-decoration: none !important;" title="Ir al perfil">{{user.email}}</a></h1>
   <button onclick="logout()">Logout</button>
 </nav>
 <section>
@@ -26,8 +26,9 @@
   </header>
   <ol>
     {{#each docs}}
-      <li>
-        {{this.codigo}} - {{this.nombre}} - {{this.categoria}} - ${{this.precioVenta}} - STOCK: {{this.stock}}
+      <li style="display: flex; gap: 0.5em; align-items: center;">
+        <p style="margin: .5em 0;">{{this.code}} - {{this.name}} - {{this.category}} - ${{this.sellingPrice}} - STOCK: {{this.stock}}</p>
+        <button onclick="addToCart('{{this.code}}')">Añadir al carrito</button>
       </li>
     {{/each}}
   </ol>

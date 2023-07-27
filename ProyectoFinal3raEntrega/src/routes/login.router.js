@@ -1,12 +1,14 @@
 import { Router } from "express"
 import userModel from '../models/user.model.js'
+import cartModel from '../models/cart.model.js'
 import { createHash, isValidPassword } from "../utils/utils.js"
+import passport from "passport"
 
+// Inicializamos el router
 const router = Router()
 
 // GET / - Pantalla de inicio
 router.get('/', (req, res) => {
-  console.log(req.session)
   // Si el usuario ya esta logeado en la session, lo redirigimos a la lista de productos
   if (req.session.user) return res.redirect('/api/products')
   res.render('login')
@@ -19,10 +21,28 @@ router.get('/register', (req, res) => {
   res.render('register')
 })
 
-// GET /login/:email/:password - Logea al usuario
-router.get('/login', async (req, res) => {
-  let email = req.params.email
-  let password = req.params.password
+// GET /github - inicia sesion con github
+router.get('/github', passport.authenticate('github', { scope: ["user:email"] }, (req, res) => {}))
+
+router.get('/login/github', passport.authenticate('github', { failureRedirect: '/login'}), async (req, res) =>{
+  req.session.user = req.user,
+  res.redirect('/')
+})
+
+// GET /logout - Desconecta la sesion actual del usuario
+router.get('/logout', (req, res) =>{
+  if (req.session.user){
+    req.session.destroy( err => {
+      if (err) return res.send('ERROR: cannot logout properly')
+    })
+  }
+  res.redirect('/')
+})
+
+// POST /login - Logea al usuario
+router.post('/login', async (req, res) => {
+  let email = req.body.email
+  let password = req.body.password
   let userData = await userModel.findOne({ email: {$eq: email}})
   if (!userData){
     return res.status(401).send('El usuario no existe')
@@ -37,9 +57,10 @@ router.get('/login', async (req, res) => {
 
 // POST /register - registra un usuario a la DB
 router.post('/register', async (req, res) => {
-  let email = req.params.email
-  let password = req.params.password
-  let age = req.params.age
+  let email = req.body.email
+  let password = req.body.password
+  let age = req.body.age
+  if (!email || !password || !age) return res.status(401).send("Uno de los campos esta vacio")
   let userData = await userModel.findOne({email: {$eq: email}})
   if (userData){
     res.status(200).send('Ya existe un usuario con ese email')

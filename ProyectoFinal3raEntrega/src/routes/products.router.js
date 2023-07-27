@@ -1,22 +1,23 @@
 import { Router } from "express"
 import productModel from "../models/product.model.js"
+import { generateProductsList } from "../utils/mockingProducts.js"
 
 // Inicializamos el router
 const router = Router()
 
-// Ruta GET / - muestra los productos
+// GET / - muestra los productos
 router.get('/', async (req, res) => {
   // Recuperamos el numero de la pagina, la cant. de productos a mostrar y el orden o dejamos los valores por default
   let page = parseInt(req.query.page) || 1
-  let limit = parseInt(req.query.limit) || 10
+  let limit = parseInt(req.query.limit) || 5
   let sortObj = {}
   let sortOption = req.query.sort
   if (sortOption == 'asc' || sortOption == 'desc'){
-    obj.precioVenta = sortOption
+    sortObj.precioVenta = sortOption
   } else if (sortOption == 'cat'){
-    obj.categoria = 1
+    sortObj.categoria = 1
   } else if (sortOption == 'stock'){
-    obj.stock = -1
+    sortObj.stock = -1
   }
 
   // Obtenemos la informacion y paginamos
@@ -29,24 +30,98 @@ router.get('/', async (req, res) => {
   res.render('products', data)
 })
 
-// Ruta GET /:pid - devuelve un producto especifico
+// GET /:pid - devuelve un producto especifico
 router.get('/:pid', async (req, res) => {
-
+  let pid = req.params.pid
+  let productData = await productModel.findOne({ code: {$eq: pid} })
+  if (!productData){
+    res.status(400).send(`No existe el producto de codigo ${pid}`)
+  }
+  // Agregamos la informacion del usuario
+  productData.user = req.session.user
+  res.render('product', productData)
 })
 
-// Ruta POST / - agrega un producto
+// POST / - agrega un producto
 router.post('/', async (req, res) => {
-
+  // Desestructuramos el query con los parametros y transformamos stock y precioVenta a numero
+  let { code, name, category, description, stock, sellingPrice, buyingPrice, thumbnails } = req.query
+  stock = Number (stock), sellingPrice = Number (sellingPrice)
+  // Chequeamos que no falte ningun campo
+  if (!code || !name || !category || !sellingPrice || !stock || !buyingPrice){
+    res.status(400).send("Falta completar algun campo obligatorio")
+    return
+  }
+  // Chequeamos que no exista un producto con ese codigo
+  let exists = await productModel.findOne({ code: {$eq: code}})
+  if (exists){
+    res.status(400).send(`Ya existe un producto con codigo ${code}`)
+    return
+  }
+  // Chequeamos el rol del usuario
+  let owner = req.session.user.role == "admin" ? "admin" : req.session.user.email
+  // Finalmente creamos el producto y lo guardamos a la DB
+  let product = {
+    code: code,
+    name: name,
+    description: description,
+    category: category,
+    thumbnails: thumbnails,
+    buyingPrice: buyingPrice,
+    sellingPrice: sellingPrice,
+    stock: stock,
+    owner: owner
+  }
+  await productModel.create( product )
+  res.status(200).send(`Producto con codigo ${code} creado con exito`)
 })
 
-// Ruta PUT /:pid - actualiza un producto
+// PUT /:pid - actualiza un producto
 router.put('/:pid', async (req, res) => {
-
+  // Verificamos que se hayan ingresado bien los datos
+  let pid = req.params.pid
+  let { name, category, sellingPrice, stock } = req.query
+  sellingPrice = Number (sellingPrice), stock = Number(stock)
+  // Chequeamos si existe el producto
+  let data = await productModel.findOne({ code: {$eq: pid}})
+  if (!data){
+    res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Creamos una copia del producto y reemplazamos los campos ingresados
+  let product = data
+  if (name) product.name = name
+  if (category) product.category = category
+  if (sellingPrice) product.sellingPrice = sellingPrice
+  if (stock) product.stock = stock
+  // Actualizamos la DB
+  await productModel.updateOne({ code: pid }, product )
+  res.send(`Producto con codigo ${code} actualizado con exito`)
 })
 
-// Ruta DELETE /:pid - elimina un producto
+// DELETE /:pid - elimina un producto
 router.delete('/:pid', async (req, res) => {
+  let pid = req.params.pid
+  // Verificamos que exista el producto con dicho codigo
+  let exists = await productModel.findOne({ code: {$eq: pid}})
+  if (!exists){
+    res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Eliminamos el producto de la DB
+  await productModel.deleteOne({ code: {$eq: pid}})
+  res.send(`Producto con codigo ${pid} eliminado con exito`)
+})
 
+// POST /mockingproducts - agrega productos ficticios a la DB
+router.post('/mockingproducts', async (req, res) => {
+  let products = generateProductsList(req.session.user.role, req.session.user.email)
+  let productsData = await productModel.insertMany(products)
+  res.status(200).send({ 
+    "status": "succesful",
+    "message": "mocking products generated correctly",
+    "data": productsData
+  })
 })
 
 export default router

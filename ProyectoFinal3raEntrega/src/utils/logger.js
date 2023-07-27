@@ -32,14 +32,12 @@ const createLogger = ( env ) => {
       transports: [
         new winston.transports.File({ 
           filename: './errors.log',
-          level: 'error',
-          format: winston.format.timestamp()
+          level: 'error'
         }),
         new winston.transports.Console({ 
           format: winston.format.combine(
             winston.format.colorize(),
-            winston.format.simple(),
-            winston.format.timestamp()
+            winston.format.simple()
           )
         })
       ]
@@ -51,14 +49,12 @@ const createLogger = ( env ) => {
       transports: [
         new winston.transports.File({ 
           filename: './errors.log',
-          level: 'error',
-          format: winston.format.timestamp()
+          level: 'error'
         }),
         new winston.transports.Console({ 
           format: winston.format.combine(
             winston.format.colorize(),
-            winston.format.simple(),
-            winston.format.timestamp()
+            winston.format.simple()
           )
         })
       ]

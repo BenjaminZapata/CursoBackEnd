@@ -1,0 +1,11 @@
+<nav style="display: flex; align-items: center; gap: 1em;">
+  <h1>Bienvenido, {{this.role}} {{this.email}}</h1>
+  <button onclick="logout()">Logout</button>
+</nav>
+<section>
+  <h2>{{this.email}}</h2>
+  <h3>Mongo ID: {{this._id}}</h3>
+  <h3>{{this.age}} años - Rol: {{this.role}}</h3>
+
+  <a href="/api/products"><button>Volver</button></a>
+</section>

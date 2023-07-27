@@ -20,6 +20,11 @@
     "express-session": "^1.17.3",
     "mongoose": "^7.3.4",
     "mongoose-paginate-v2": "^1.7.23",
-    "passport": "^0.6.0"
+    "passport": "^0.6.0",
+    "passport-github2": "^0.1.12",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.0.2"
   }
 }

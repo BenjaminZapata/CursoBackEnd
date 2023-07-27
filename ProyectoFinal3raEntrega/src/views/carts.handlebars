@@ -1,0 +1,25 @@
+<nav style="display: flex; align-items: center; gap: 1em;">
+  <h1>Bienvenido, {{user.role}} <a href="/api/users/profile" style="color: #464646 !important; text-decoration: none !important;" title="Ir al perfil">{{user.email}}</a></h1>
+  <button onclick="logout()">Logout</button>
+</nav>
+<section>
+  <h2>Cart #{{id}}</h2>
+  {{#unless products}}
+    <p>No hay items agregados al carrito</p>
+  {{/unless}}
+  {{#if products}}
+    {{#each products}}
+      <p>{{this.product.code}} - {{this.product.name}} - ${{this.product.sellingPrice}} - x{{this.quantity}}</p>
+    {{/each}}
+  {{/if}}
+  <footer>
+    <form id="cartForm">
+      <label>Agrege un producto por codigo: </label>
+      <input name="codigo">
+      <button type="submit">Agregar</button>
+    </form>
+    <a href="/api/products"><button>Volver</button></a>
+  </footer>
+</section>
+
+<script src="/carts.js" cartId="{{id}}"></script>
