@@ -5,6 +5,12 @@ import { generateProductsList } from "../utils/mockingProducts.js"
 // Inicializamos el router
 const router = Router()
 
+// Funcion que sirve para autorizar operaciones segun el rol del usuario
+const checkAuth = (req, role) => {
+  if (req.session.user.role == role) return true
+  return false
+}
+
 // GET / - muestra los productos
 router.get('/', async (req, res) => {
   // Recuperamos el numero de la pagina, la cant. de productos a mostrar y el orden o dejamos los valores por default
@@ -44,6 +50,7 @@ router.get('/:pid', async (req, res) => {
 
 // POST / - agrega un producto
 router.post('/', async (req, res) => {
+  if (checkAuth(req, "user")) return res.status(401).send("ERROR: role not valid for that action")
   // Desestructuramos el query con los parametros y transformamos stock y precioVenta a numero
   let { code, name, category, description, stock, sellingPrice, buyingPrice, thumbnails } = req.query
   stock = Number (stock), sellingPrice = Number (sellingPrice)
@@ -78,6 +85,7 @@ router.post('/', async (req, res) => {
 
 // PUT /:pid - actualiza un producto
 router.put('/:pid', async (req, res) => {
+  if (checkAuth(req, "user")) return res.status(401).send("ERROR: role not valid for that action")
   // Verificamos que se hayan ingresado bien los datos
   let pid = req.params.pid
   let { name, category, sellingPrice, stock } = req.query
@@ -86,6 +94,11 @@ router.put('/:pid', async (req, res) => {
   let data = await productModel.findOne({ code: {$eq: pid}})
   if (!data){
     res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Chequeamos si el usuario es premium y si el producto es suyo
+  if (req.user.session.role == 'premium' && req.user.session.email != data.owner){
+    res.status(401).send("ERROR: premium users can only update own products")
     return
   }
   // Creamos una copia del producto y reemplazamos los campos ingresados
@@ -101,11 +114,17 @@ router.put('/:pid', async (req, res) => {
 
 // DELETE /:pid - elimina un producto
 router.delete('/:pid', async (req, res) => {
+  if (checkAuth(req, "user")) return res.status(401).send("ERROR: role not valid for that action")
   let pid = req.params.pid
   // Verificamos que exista el producto con dicho codigo
-  let exists = await productModel.findOne({ code: {$eq: pid}})
-  if (!exists){
+  let product = await productModel.findOne({ code: {$eq: pid}})
+  if (!product){
     res.status(404).send(`No existe el producto con codigo ${pid}`)
+    return
+  }
+  // Chequeamos si el usuario es premium y que el producto sea suyo
+  if (req.user.session.role == 'premium' && req.user.session.email != product.owner){
+    res.status(401).send("ERROR: premium users can only erase own products")
     return
   }
   // Eliminamos el producto de la DB
@@ -115,6 +134,7 @@ router.delete('/:pid', async (req, res) => {
 
 // POST /mockingproducts - agrega productos ficticios a la DB
 router.post('/mockingproducts', async (req, res) => {
+  if (checkAuth(req, "user")) return res.status(401).send("ERROR: role not valid for that action")
   let products = generateProductsList(req.session.user.role, req.session.user.email)
   let productsData = await productModel.insertMany(products)
   res.status(200).send({ 

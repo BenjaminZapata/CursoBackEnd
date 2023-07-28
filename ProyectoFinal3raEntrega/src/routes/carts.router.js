@@ -5,6 +5,12 @@ import productModel from "../models/product.model.js"
 // Inicializamos el router
 const router = Router()
 
+// Funcion que sirve para autorizar operaciones segun el rol del usuario
+const checkAuth = (req, role) => {
+  if (req.session.user.role == role) return true
+  return false
+}
+
 // POST / - crea un carrito nuevo
 router.post('/', async (req, res) => {
   // Empezando desde la id 1, chequeamos que no exista carritos con dicha id e id posteriores. Cuando encontremos el id no utilizado, crearemos el carrito con dicho id
@@ -46,6 +52,11 @@ router.post('/:cid/product/:pid', async (req, res) => {
   let productData = await productModel.findOne({ code: {$eq: pid}})
   if (!productData) {
     res.status(404).send(`No existe el producto con id ${pid}`)
+    return
+  }
+  // Chequeamos el rol del usuario y que el producto no sea creado por el mismo
+  if (req.session.user.role == 'premium' && req.session.user.email == productData.owner){
+    res.status(401).send("ERROR: premium users can't add own products")
     return
   }
   // Chequeamos que haya stock del producto

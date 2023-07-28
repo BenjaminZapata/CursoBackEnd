@@ -27,6 +27,7 @@
   <ol>
     {{#each docs}}
       <li style="display: flex; gap: 0.5em; align-items: center;">
+        <img style="width: 50px;" src="{{this.thumbnails}}"/>
         <p style="margin: .5em 0;">{{this.code}} - {{this.name}} - {{this.category}} - ${{this.sellingPrice}} - STOCK: {{this.stock}}</p>
         <button onclick="addToCart('{{this.code}}')">Añadir al carrito</button>
       </li>
