@@ -1,5 +1,5 @@
 import { Router } from "express"
-import userModel from "../models/user.model.js"
+import { getProfile, switchPremiumRole } from "../controllers/users.controller.js"
 
 // Inicializamos el router
 const router = Router()
@@ -11,29 +11,10 @@ const adminAuth = (req, res, next) => {
 }
 
 // GET /profile - muestra el perfil del usuario loggeado
-router.get('/profile', (req, res) => res.render('profile', req.session.user))
+router.get('/profile', getProfile )
 
 //GET /premium/:uid
-router.get('/premium/:uid', adminAuth, async (req, res) => {
-  let uid = req.params.uid
-  const userData = await userModel.findOne({ _id: {$eq: uid}})
-  if (!userData){
-    res.status(401).send(`No existe un usuario con id ${uid}`)
-    return
-  }
-  const userRole = userData.role
-  if (userRole == "admin"){
-    res.status(401).send("ERROR: el usuario tiene el rol de admin")
-    return
-  }
-  const newRole = userRole == "user" ? "premium" : "user"
-  userData.role = newRole
-  await userModel.updateOne({ _id: uid}, userData)
-  res.send({
-    message: "user role updated",
-    payload: userData
-  })
-})
+router.get('/premium/:uid', adminAuth, switchPremiumRole)
 
 
 export default router

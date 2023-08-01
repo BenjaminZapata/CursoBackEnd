@@ -1,18 +1,52 @@
 import { persistence } from "../config/main.config.js"
+export default class PersistenceFactory {
+  static getPersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: MongoClientDAO } = await import('./mongo/mongo.connection.dao.js')
+        return new MongoClientDAO()
+      default:
+        break
+    }
+  }
 
-let ProductDao, CartDao, UsersDao
+  static getCartPersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: CartsMongoDAO } = await import('./mongo/carts.mongo.dao.js')
+        return new CartsMongoDAO()
+      default:
+        break
+    }
+  }
 
-switch (persistence){
-  case 'MONGO':
-    const { default: ProductMongoDAO } = await import('')
-    ProductDao = ProductMongoDAO
+  static getProductPersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: ProductsMongoDAO } = await import('./mongo/products.mongo.dao.js')
+        return new ProductsMongoDAO()
+      default:
+        break
+    }
+  }
 
-    const { default: CartMongoDAO } = await import('')
-    CartDao = CartMongoDAO
+  static getUserPersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: UsersMongoDAO } = await import('./mongo/users.mongo.dao.js')
+        return new UsersMongoDAO()
+      default:
+        break
+    }
+  }
 
-    const { default: UsersMongoDAO } = await import('')
-    UsersDao = UsersMongoDAO
-    break
-  default:
-    break
+  static getTicketPersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: TicketsMongoDAO } = await import('./mongo/tickets.mongo.dao.js')
+        return new TicketsMongoDAO()
+      default:
+        break
+    }
+  }
 }

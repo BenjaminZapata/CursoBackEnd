@@ -6,7 +6,6 @@ addEventListener("submit", e => {
   let q = ''
   if (filter) q += `sort=${filter}&`
   if (entries) q += `limit=${entries}`
-  console.log(entries, filter)
   window.location.replace(`/api/products?${q}&page=1`)
 })
 

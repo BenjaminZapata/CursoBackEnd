@@ -4,7 +4,6 @@ import logger from "../utils/logger.js"
 const router = Router()
 
 router.get('/', (req, res) => {
-  console.log(req.session)
   logger.log('debug', `Testing logs - ${new Date().toLocaleTimeString()}`)
   logger.log('http', `Testing logs - ${new Date().toLocaleTimeString()}`)
   logger.log('info', `Testing logs - ${new Date().toLocaleTimeString()}`)
