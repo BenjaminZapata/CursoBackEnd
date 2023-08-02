@@ -1,6 +1,9 @@
 import CartService from "../services/cartService.js"
+import TicketService from "../services/ticketService.js"
+import { generateRandomID } from "../utils/utils.js"
 import { productService } from "./products.controller.js"
 export const cartService = new CartService()
+const ticketService = new TicketService()
 
 const checkAuth = (req, role) => {
   if (req.session.user.role == role) return true
@@ -66,7 +69,7 @@ export const addProductToCart = async ( req, res ) => {
       return
     }
     cartData.products[index].quantity += 1
-    cartData = await cartService.updateCart(cid, cartData)
+    cartData = await cartService.updateCart(cid, cartData.products)
     res.status(200).send(`Se agrego otra unidad del producto con codigo ${pid} al carrito de id ${cid}`)
     return
   }
@@ -101,7 +104,7 @@ export const deleteProductFromCart = async ( req, res ) => {
   // Filtramos los productos, removiendo el producto con el codigo indicado y actualizamos el carrito en la DB
   array = array.filter( item => item.product.code != pid)
   cartCopy.products = array
-  await cartService.updateCart(cid, cartCopy)
+  await cartService.updateCart(cid, cartCopy.products)
   res.status(200).send(`Producto de codigo ${pid} eliminado del carrito con id ${cid} con exito`)
 }
 
@@ -131,7 +134,7 @@ export const updateProductInCart = async ( req, res ) => {
   // Actualizamos la copia y la DB
   array[index].quantity = quantity
   cartCopy.products = array
-  await cartService.updateCart(cid, cartCopy)
+  await cartService.updateCart(cid, cartCopy.products)
   res.status(200).send(`Se ha actualizado la cantidad del producto de codigo ${pid} del carrito ${cid}`)
 }
 
@@ -150,7 +153,7 @@ export const emptyCart = async ( req, res ) => {
   }
   // Vaciamos el array de productos de la copia y actualizamos la DB
   cartCopy.products = []
-  await cartService.updateCart(cid, cartCopy)
+  await cartService.updateCart(cid, cartCopy.products)
   res.status(200).send(`Carrito de codigo ${cid} vaciado con exito`)
 }
 
@@ -162,18 +165,21 @@ export const buyCart = async ( req, res ) => {
     res.status(400).send(`El carrito de id ${cid} no existe`)
     return
   }
+  if (cartData.products.length == 0){
+    res.status(400).send(`El carrito de id ${cid} esta vacio`)
+    return
+  }
   // Creamos dos carritos, uno con los productos que no pueden procesarse (por falta de stock, etc) y los que si vendimos. Tambien ya vamos definiendo el total de la compra
   let purchasedCart = []
   let remainingProductsCart = []
   let total = 0
   // Controlamos el stock de los productos seleccionados. Si no hay stock, se retira el producto del carrito. Caso contrario se remueve la cantidad de la propiedad stock del producto
-  let index = 0
   for (const p of cartData.products){
     const productData = await productService.getById(p.product.code)
     if (p.quantity < productData.stock){
       productData.stock -= p.quantity
       total += (productData.sellingPrice * p.quantity)
-      await productService.updateById(p.code, productData)
+      await productService.updateById(p.product.code, productData)
       purchasedCart.push({
         _id: productData._id,
         name: productData.name,
@@ -192,5 +198,19 @@ export const buyCart = async ( req, res ) => {
   }
   // Actualizamos el carrito con los productos sin stock
   cartService.updateCart(cid, remainingProductsCart)
-  res.status(200).send({"purchased": purchasedCart, "unavailable": remainingProductsCart})
+  // Creamos un ticket con la informacion de la compra
+  let ticket = {
+    "code": generateRandomID(),
+    "purchase_datetime": Date.now(),
+    "amount": total,
+    "purchaser": req.session.user.email,
+    "products": purchasedCart
+  }
+  ticketService.createTicket(ticket)
+  ticket.purchase_datetime = new Date(ticket.purchase_datetime).toString().substring(3)
+  let data = {
+    "ticket": ticket,
+    "user": req.session.user
+  }
+  res.status(200).render("ticket", data)
 }

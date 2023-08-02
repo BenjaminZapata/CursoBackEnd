@@ -1,4 +1,4 @@
-import { createHash, isValidPassword } from "../utils/utils.js"
+import { createHash, isValidPassword, generateRandomID } from "../utils/utils.js"
 import UserService from "../services/userService.js"
 import { cartService } from "../controllers/carts.controller.js"
 import UserDTO from "../dtos/user.dto.js"
@@ -100,4 +100,25 @@ export const switchPremiumRole = async ( req, res ) => {
 export const getUserDTO = async ( req, res ) => {
   const userDTO = new UserDTO(req.session.user)
   res.status(200).json(userDTO)
+}
+
+export const recover = ( req, res ) => {
+  res.render('recoverPassword')
+}
+
+export const generateRecoverCode = async ( req, res ) => {
+  let email = req.body.email
+  let user = await userService.getByEmail(email)
+  if (!user) {
+    res.status(400).send("No existe un usuario con ese email")
+    return
+  }
+  let code = generateRandomID()
+  let date = Date.now()
+  let data = {
+    "email": email,
+    "code": code,
+    "expires_in": date
+  }
+  res.status(200).send(data)
 }

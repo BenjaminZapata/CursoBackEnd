@@ -1,4 +1,5 @@
 import { persistence } from "../config/main.config.js"
+
 export default class PersistenceFactory {
   static getPersistence = async() => {
     switch (persistence){

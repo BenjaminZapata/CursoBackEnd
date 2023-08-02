@@ -20,7 +20,7 @@ export default class ProductsMongoDAO {
   }
 
   updateById = async (id, product) => {
-    return await productModel.updateOne({ code: id }, { product } )
+    return await productModel.updateOne({ code: id }, product )
   }
 
   deleteByID = async (id) => {

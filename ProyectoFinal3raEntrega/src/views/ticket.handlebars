@@ -1,0 +1,18 @@
+<nav style="display: flex; align-items: center; gap: 1em;">
+  <h1>Bienvenido, {{user.role}} <a href="/api/users/profile" style="color: #464646 !important; text-decoration: none !important;" title="Ir al perfil">{{user.email}}</a></h1>
+  <button onclick="logout()">Logout</button>
+</nav>
+<article style="display: flex; flex-direction: column; align-items: center; gap: .5em; margin-top: 1em;">
+  <h2 style="margin: 0">Compra completada con exito</h2>
+  <h3 style="margin: 0">ID: {{ticket.code}}</h3>
+  <h5 style="margin: 0">Comprador: {{ticket.purchaser}}</h5>
+  <p style="margin: 0">{{ticket.purchase_datetime}}</p>
+  <ul style="list-style: none; display: flex; flex-direction: column; align-items: center;">
+    {{#each ticket.products}}
+      <li style="display: flex; gap: 1em;">
+        <p style="margin: 0">{{this.name}} - x{{this.quantity}} - ${{this.sellingPrice}}</p>
+      </li>
+    {{/each}}
+  </ul>
+  <h3 style="margin: 0">Total: ${{ticket.amount}}</h3>
+</article>

@@ -10,7 +10,7 @@ export default class TicketService {
     this.ticketDao = await PersistenceFactory.getTicketPersistence()
   }
 
-  createTicket = async (code, date, total, purchaser) => {
-    return await this.productDao.createTicket(code, date, total, purchaser)
+  createTicket = async (ticket) => {
+    return await this.ticketDao.createTicket(ticket)
   }
 }

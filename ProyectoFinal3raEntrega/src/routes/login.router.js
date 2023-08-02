@@ -1,6 +1,6 @@
 import { Router } from "express"
 import passport from "passport"
-import { getUserDTO, github, login, loginGithub, logout, register, renderLogin, renderRegister } from "../controllers/users.controller.js"
+import { getUserDTO, github, login, loginGithub, logout, register, renderLogin, renderRegister, recover, generateRecoverCode } from "../controllers/users.controller.js"
 
 // Inicializamos el router
 const router = Router()
@@ -22,10 +22,16 @@ router.get('/logout', logout)
 // POST /login - Logea al usuario
 router.post('/login', login)
 
-// POST /register - registra un usuario a la DB
+// POST /register - Registra un usuario en la DB
 router.post('/register', register)
 
-// GET /userDTO - Desconecta la sesion actual del usuario
+// GET /userDTO - Obtiene el DTO del usuario de la sesion actual
 router.get('/userDTO', getUserDTO)
+
+// GET /recover - Facilita un link via email para recuperar la contraseña
+router.get('/recover', recover)
+
+// POST /recover - Facilita un link via email para recuperar la contraseña
+router.post('/recover', generateRecoverCode)
 
 export default router
