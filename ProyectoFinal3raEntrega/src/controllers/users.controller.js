@@ -90,7 +90,7 @@ export const switchPremiumRole = async ( req, res ) => {
   }
   const newRole = userRole == "user" ? "premium" : "user"
   userData.role = newRole
-  await userService.updateById(id, userData)
+  await userService.updateById(uid, userData)
   res.send({
     message: "user role updated",
     payload: userData

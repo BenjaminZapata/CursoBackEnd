@@ -160,14 +160,37 @@ export const buyCart = async ( req, res ) => {
   let cartData = await cartService.getById(cid)
   if (!cartData){
     res.status(400).send(`El carrito de id ${cid} no existe`)
+    return
   }
+  // Creamos dos carritos, uno con los productos que no pueden procesarse (por falta de stock, etc) y los que si vendimos. Tambien ya vamos definiendo el total de la compra
+  let purchasedCart = []
+  let remainingProductsCart = []
+  let total = 0
   // Controlamos el stock de los productos seleccionados. Si no hay stock, se retira el producto del carrito. Caso contrario se remueve la cantidad de la propiedad stock del producto
-  cartData.products.forEach(async (p, index) => {
+  let index = 0
+  for (const p of cartData.products){
     const productData = await productService.getById(p.product.code)
     if (p.quantity < productData.stock){
-      cartData.products.splice(index, 1)
+      productData.stock -= p.quantity
+      total += (productData.sellingPrice * p.quantity)
+      await productService.updateById(p.code, productData)
+      purchasedCart.push({
+        _id: productData._id,
+        name: productData.name,
+        code: productData.code,
+        sellingPrice: productData.sellingPrice,
+        quantity: p.quantity
+      })
+    } else {
+      remainingProductsCart.push(p)
     }
-  })
-  let newCart = cartData.products
-  res.status(200).send(newCart)
+  }
+  // Si no existen productos con stock dentro del carrito, devolvemos 
+  if (purchasedCart.length == 0) {
+    res.status(200).send("No se puede concretar la compra, stock no disponible")
+    return
+  }
+  // Actualizamos el carrito con los productos sin stock
+  cartService.updateCart(cid, remainingProductsCart)
+  res.status(200).send({"purchased": purchasedCart, "unavailable": remainingProductsCart})
 }

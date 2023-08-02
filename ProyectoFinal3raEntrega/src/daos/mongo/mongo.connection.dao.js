@@ -13,6 +13,7 @@ export default class MongoClientDAO {
     try {
       if (this.connected) throw new Error("Already connected to MongoDB")
       await this.client.connect(mongoURL)
+      this.connected = true
       logger.info("INFO: succesful connection to MongoDB")
     } catch (err) {
       logger.fatal(`ERROR: ${err}`)

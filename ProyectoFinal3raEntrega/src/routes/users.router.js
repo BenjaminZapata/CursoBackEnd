@@ -6,7 +6,7 @@ const router = Router()
 
 // Admin middleware
 const adminAuth = (req, res, next) => {
-  if (req.session.user.role == 'admin') return next()
+  if (req.session.user.role !== 'admin') return next()
   res.send('ERROR: insufficient role permissions')
 }
 

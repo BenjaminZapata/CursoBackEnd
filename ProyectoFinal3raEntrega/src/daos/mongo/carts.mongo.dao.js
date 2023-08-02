@@ -16,11 +16,11 @@ export default class CartsMongoDAO {
   }
 
   updateCart = async (id, cart) => {
-    return await cartModel.updateOne({ id: id }, cart)
+    return await cartModel.updateOne({ id: id }, { products: cart })
   }
 
   emptyCart = async (id, cart) => {
-    return await cartModel.updateOne({ id: id }, cart)
+    return await cartModel.updateOne({ id: id }, { products: cart })
   }
 
   deleteCart = async (id) => {

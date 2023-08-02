@@ -10,6 +10,10 @@ export default class UserService {
     this.userDao = await PersistenceFactory.getUserPersistence()
   }
 
+  getById = async (id) => {
+    return await this.userDao.getById(id)
+  }
+
   getByEmail = async (email) => {
     return await this.userDao.getByEmail(email)
   }
