@@ -1,9 +1,12 @@
 import { createHash, isValidPassword, generateRandomID } from "../utils/utils.js"
 import UserService from "../services/userService.js"
 import { cartService } from "../controllers/carts.controller.js"
+import RecoverCodeService from "../services/recoverCodeService.js"
 import UserDTO from "../dtos/user.dto.js"
+import { sendRecoverEmail } from "../utils/sendEmail.js"
 
 const userService = new UserService()
+const recoverCodeService = new RecoverCodeService()
 
 export const renderLogin = async ( req, res ) => {
   // Si el usuario ya esta logeado en la session, lo redirigimos a la lista de productos
@@ -44,7 +47,7 @@ export const register = async ( req, res ) => {
   }
   let hashedPassword = createHash(password)
   let cartData = await cartService.getById(1)
-  await userModel.create({ 
+  await userService.create({ 
     email: email,
     password: hashedPassword, 
     age: age,
@@ -114,11 +117,43 @@ export const generateRecoverCode = async ( req, res ) => {
     return
   }
   let code = generateRandomID()
-  let date = Date.now()
+  let date = Date.now() + 3600000
   let data = {
     "email": email,
     "code": code,
     "expires_in": date
   }
-  res.status(200).send(data)
+  await recoverCodeService.generateCode(data)
+  await sendRecoverEmail(email, code)
+  res.render('checkRecoverPassword', data)
+}
+
+export const setNewPassword = async ( req, res ) => {
+  let email = req.body.email
+  let code = req.body.code
+  let newPassword = req.body.newPassword
+  let codeCheck = await recoverCodeService.getByCode(code)
+  if (!codeCheck){
+    res.status(400).send("El codigo no existe")
+    return
+  }
+  if(codeCheck.email !== email){
+    res.status(400).send("El correo no coincido con el codigo ingresado")
+    return
+  }
+  if(Date.now() > codeCheck.expires_in){
+    await recoverCodeService.eraseCode(code)
+    res.status(400).send("El codigo ha expirado")
+  }
+  let user = await userService.getByEmail(email)
+  let samePassword = isValidPassword(user, newPassword)
+  if (samePassword){
+    res.status(400).send("La contraseña nueva no puede ser igual a la anterior")
+    return
+  }
+  let hashedNewPassword = createHash(newPassword)
+  user.password = hashedNewPassword
+  await userService.updateById(user._id, user)
+  await recoverCodeService.eraseCode(code)
+  res.status(200).send("El usuario ha actualizado su contraseña")
 }

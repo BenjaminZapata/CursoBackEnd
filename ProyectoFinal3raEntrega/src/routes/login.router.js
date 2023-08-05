@@ -1,6 +1,6 @@
 import { Router } from "express"
 import passport from "passport"
-import { getUserDTO, github, login, loginGithub, logout, register, renderLogin, renderRegister, recover, generateRecoverCode } from "../controllers/users.controller.js"
+import { getUserDTO, github, login, loginGithub, logout, register, renderLogin, renderRegister, recover, generateRecoverCode, setNewPassword } from "../controllers/users.controller.js"
 
 // Inicializamos el router
 const router = Router()
@@ -28,10 +28,13 @@ router.post('/register', register)
 // GET /userDTO - Obtiene el DTO del usuario de la sesion actual
 router.get('/userDTO', getUserDTO)
 
-// GET /recover - Facilita un link via email para recuperar la contraseña
+// GET /recover - Pantalla de reestablecimiento de contraseña
 router.get('/recover', recover)
 
-// POST /recover - Facilita un link via email para recuperar la contraseña
+// POST /recover - Facilita un codigo via email para recuperar la contraseña
 router.post('/recover', generateRecoverCode)
+
+// POST /recoverCheck - Chequea si el codigo es correcto y cambia la contraseña
+router.post('/checkRecover', setNewPassword)
 
 export default router

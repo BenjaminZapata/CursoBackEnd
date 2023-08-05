@@ -50,4 +50,14 @@ export default class PersistenceFactory {
         break
     }
   }
+
+  static getRecoverCodePersistence = async() => {
+    switch (persistence){
+      case 'MONGO':
+        const { default: RecoveryCodesMongoDAO } = await import('./mongo/recoverCodes.mongo.dao.js')
+        return new RecoveryCodesMongoDAO()
+      default:
+        break
+    }
+  }
 }

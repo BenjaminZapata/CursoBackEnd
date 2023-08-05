@@ -3,7 +3,6 @@ import MongoStore from "connect-mongo"
 import express from "express"
 import handlebars from "express-handlebars"
 import session from "express-session"
-import mongoose from "mongoose"
 import passport from "passport"
 // config imports
 import { __dirname } from "./utils/utils.js"
@@ -12,6 +11,7 @@ import { mongoURL, serverPort } from "./config/main.config.js"
 // routes and middleware imports
 import logger from "./utils/logger.js"
 import { auth } from "./middlewares/authentication.js"
+import { errorHandler } from "./middlewares/error.js"
 import loginRouter from "./routes/login.router.js"
 import productsRouter from "./routes/products.router.js"
 import cartsRouter from "./routes/carts.router.js"
@@ -41,6 +41,7 @@ server.use(express.static(__dirname + '/public'))
 initializePassport()
 server.use(passport.initialize())
 server.use(passport.session())
+server.use(errorHandler)
 server.engine('handlebars', handlebars.engine())
 server.set('views', 'src/views')
 server.set('view engine', 'handlebars')

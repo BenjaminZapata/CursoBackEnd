@@ -2,10 +2,11 @@ import mongoose from 'mongoose'
 
 const recoverSchema = mongoose.Schema({
   id: String,
+  email: String,
   code: String,
   expires_in: Number
 })
 
-const recoveryModel = mongoose.model('recoveryCodes', recoverSchema)
+const recoverModel = mongoose.model('recoverCodes', recoverSchema)
 
-export default recoveryModel
+export default recoverModel
