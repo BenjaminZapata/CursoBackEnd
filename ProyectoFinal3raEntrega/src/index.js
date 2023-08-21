@@ -19,6 +19,7 @@ import usersRouter from "./routes/users.router.js"
 import loggerRouter from "./routes/logger.router.js"
 import PersistenceService from "./services/index.js"
 
+// Definimos el servidor HTTP
 const server = express()
 
 // Iniciamos mongo, motor de plantillas, passport, session y otras utilidades
@@ -53,10 +54,10 @@ server.use('/api/carts', auth, cartsRouter)
 server.use('/api/users', auth, usersRouter)
 server.use('/loggertest', loggerRouter)
 
-// Arrancamos el servidor
+// Arrancamos el servidor HTTP
 let persistence = new PersistenceService()
 
-server.listen(serverPort, () => {
+const httpServer = server.listen(serverPort, () => {
   logger.info(`Server listening on port ${serverPort} - ${new Date().toLocaleTimeString()}`)
   logger.log('info', `Server listening on port ${serverPort} - ${new Date().toLocaleTimeString()}`)
 })
