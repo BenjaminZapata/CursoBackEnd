@@ -1,5 +1,8 @@
 import { Router } from "express"
-import { getProfile, switchPremiumRole } from "../controllers/users.controller.js"
+import { getProfile, renderUpdateProfilePhoto, switchPremiumRole, updateProfilePhoto } from "../controllers/users.controller.js"
+import multer from "multer"
+
+const upload = multer({ dest: './documents'})
 
 // Inicializamos el router
 const router = Router()
@@ -13,8 +16,13 @@ const adminAuth = (req, res, next) => {
 // GET /profile - muestra el perfil del usuario loggeado
 router.get('/profile', getProfile )
 
-//GET /premium/:uid
+// GET /premium/:uid
 router.get('/premium/:uid', adminAuth, switchPremiumRole)
 
+// GET /updateProfilePhoto
+router.get('/updateProfilePhoto', renderUpdateProfilePhoto)
+
+// POST /updateProfilePhoto
+router.post('/updateProfilePhoto', upload.single('profile_photo'), updateProfilePhoto)
 
 export default router

@@ -17,3 +17,7 @@ export const isValidPassword = ( user, password ) => {
 export const generateRandomID = () => {
   return uuid4()
 }
+
+export const generateTimestamp = () => {
+  return Date.now()
+}

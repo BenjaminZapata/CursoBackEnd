@@ -3,6 +3,9 @@
   <button onclick="logout()">Logout</button>
 </nav>
 <section>
+  <img src={{this.profile_photo}}>
+  <br>
+  <a href="/api/users/updateProfilePhoto"><small>Cambiar foto de perfil</small></a>
   <h2>{{this.email}}</h2>
   <h3>Mongo ID: {{this._id}}</h3>
   <h3>{{this.age}} años - Rol: {{this.role}}</h3>

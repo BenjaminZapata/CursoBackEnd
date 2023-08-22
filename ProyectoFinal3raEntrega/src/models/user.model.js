@@ -11,6 +11,17 @@ const userSchema = mongoose.Schema({
   role: {
     type: String,
     default: 'user'
+  },
+  documents: [{
+    document: {
+      name: String,
+      reference: String
+    }
+  }],
+  last_connection: String,
+  profile_photo: {
+    type: String,
+    default: '/profiles/user.jpg'
   }
 })
 

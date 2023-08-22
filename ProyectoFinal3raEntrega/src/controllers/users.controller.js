@@ -1,4 +1,4 @@
-import { createHash, isValidPassword, generateRandomID } from "../utils/utils.js"
+import { createHash, isValidPassword, generateRandomID, generateTimestamp } from "../utils/utils.js"
 import UserService from "../services/userService.js"
 import { cartService } from "../controllers/carts.controller.js"
 import RecoverCodeService from "../services/recoverCodeService.js"
@@ -20,6 +20,10 @@ export const renderRegister = async ( req, res ) => {
   res.render('register')
 }
 
+export const renderUpdateProfilePhoto = async ( req, res ) => {
+  res.render('profilePhoto')
+}
+
 export const login = async ( req, res ) => {
   let email = req.body.email
   let password = req.body.password
@@ -31,6 +35,8 @@ export const login = async ( req, res ) => {
   if (!valid){
     return res.status(401).send('Los datos ingresados son incorrectos')
   }
+  userData.last_connection = generateTimestamp()
+  await userService.updateById(userData._uid, userData)
   req.session.user = userData
   res.redirect('/api/products')
 }
@@ -53,7 +59,8 @@ export const register = async ( req, res ) => {
     age: age,
     cart: {
       _id: cartData._id
-    }
+    },
+    last_connection: ''
   })
   res.status(200).send('Usuario creado con exito')
 }
@@ -67,6 +74,9 @@ export const loginGithub = async ( req, res ) => {
 }
 
 export const logout = async ( req, res ) => {
+  let userData = await userService.getByEmail(req.session.user.email)
+  userData.last_connection = generateTimestamp()
+  await userService.updateById(userData._uid, userData)
   if (req.session.user){
     req.session.destroy( err => {
       if (err) return res.send('ERROR: cannot logout properly')
@@ -156,4 +166,16 @@ export const setNewPassword = async ( req, res ) => {
   await userService.updateById(user._id, user)
   await recoverCodeService.eraseCode(code)
   res.status(200).send("El usuario ha actualizado su contraseña")
+}
+
+export const updateProfilePhoto = async ( req, res ) => {
+  const { file } = req
+  const userData = await userService.getByEmail(req.session.user.email)
+  if (!file) {
+    res.status(400).send("No se ha subido ninguna imagen")
+  }
+  const fileExtension = file.originalname.slice(-4)
+  userData.profile_photo = `/documents/${file.filename}${fileExtension}`
+  await userService.updateById(userData._uid, userData)
+  res.render('profile', userData)
 }
