@@ -1,9 +1,9 @@
-import { createHash, isValidPassword, generateRandomID, generateTimestamp } from "../utils/utils.js"
+import { createHash, isValidPassword, generateRandomID, generateTimestamp, meses } from "../utils/utils.js"
 import UserService from "../services/userService.js"
 import { cartService } from "../controllers/carts.controller.js"
 import RecoverCodeService from "../services/recoverCodeService.js"
 import UserDTO from "../dtos/user.dto.js"
-import { sendRecoverEmail } from "../utils/sendEmail.js"
+import { sendDeletedAccountEmail, sendRecoverEmail } from "../utils/sendEmail.js"
 
 const userService = new UserService()
 const recoverCodeService = new RecoverCodeService()
@@ -22,6 +22,16 @@ export const renderRegister = async ( req, res ) => {
 
 export const renderUpdateProfilePhoto = async ( req, res ) => {
   res.render('profilePhoto')
+}
+
+export const renderProfileTools = async ( req, res ) => {
+  let email = req.params.email
+  let userData = await userService.getByEmail(email)
+  let date = new Date(userData.last_connection)
+  let fullDate = `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()} a las ${date.getHours()}:${date.getMinutes()}`
+  userData.ultima_conexion = fullDate
+  userData.deleteURL = `/deleteUser/${userData.email}`
+  res.render('profileTools', userData)
 }
 
 export const login = async ( req, res ) => {
@@ -85,23 +95,65 @@ export const logout = async ( req, res ) => {
   res.redirect('/')
 }
 
+export const getUsers = async ( req, res ) => {
+  let usersData = await userService.getUsers()
+  let usersFilteredList = [] 
+  usersData.forEach( u => {
+    let user = {
+      email: u.email,
+      edad: u.age,
+      rol: u.role
+    }
+    usersFilteredList.push(user)
+  })
+  res.status(200).send(usersFilteredList)
+}
+
+export const deleteUsers = async ( req, res ) => {
+  let usersData = await userService.getUsers()
+  let counter = 0
+  usersData.forEach( async u => {
+    if (Date.now() - u.last_connection > 172800000){
+      await sendDeletedAccountEmail(u.email)
+      await userService.deleteById(u._id)
+      counter += 1
+    }
+  })
+  if (counter == 0){
+    res.status(200).send("No se han eliminado cuentas")
+    return
+  }
+  res.status(200).send(`Se han eliminado ${counter} cuentas sin actividad reciente`)
+}
+
+export const deleteUser = async ( req, res ) => {
+  let email = req.params.email
+  let userData = await userService.getByEmail(email)
+  if (!userData){
+    res.status(200).send(`No se ha encontrado al usuario con usuario ${email}`)
+    return
+  }
+  await userService.deleteById(userData._id)
+  res.status(200).send({ message: 'Se elimino al usuario', data: userData })
+}
+
 export const getProfile = async ( req, res ) => {
   res.render('profile', req.session.user)
 }
 
-export const switchPremiumRole = async ( req, res ) => {
+export const switchRole = async ( req, res ) => {
   let uid = req.params.uid
+  let newRole = req.params.role
   const userData = await userService.getById(uid)
   if (!userData){
     res.status(401).send(`No existe un usuario con id ${uid}`)
     return
   }
   const userRole = userData.role
-  if (userRole == "admin"){
-    res.status(401).send("ERROR: el usuario tiene el rol de admin")
+  if (userRole == newRole){
+    res.status(401).send(`ERROR: el usuario tiene el rol de ${userRole}`)
     return
   }
-  const newRole = userRole == "user" ? "premium" : "user"
   userData.role = newRole
   await userService.updateById(uid, userData)
   res.send({
@@ -175,7 +227,7 @@ export const updateProfilePhoto = async ( req, res ) => {
     res.status(400).send("No se ha subido ninguna imagen")
   }
   const fileExtension = file.originalname.slice(-4)
-  userData.profile_photo = `/documents/${file.filename}${fileExtension}`
+  userData.profile_photo = `/documents/${file.filename}`
   await userService.updateById(userData._uid, userData)
   res.render('profile', userData)
 }

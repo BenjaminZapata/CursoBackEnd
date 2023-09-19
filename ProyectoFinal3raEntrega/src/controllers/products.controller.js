@@ -1,6 +1,7 @@
 import ProductService from "../services/productService.js"
 import TicketService from "../services/ticketService.js"
 import { generateProductsList } from "../utils/mockingProducts.js"
+import { sendDeletedProductEmail } from "../utils/sendEmail.js"
 
 // Iniciamos los servicios
 export const productService = new ProductService()
@@ -125,6 +126,8 @@ export const deleteProduct = async ( req, res ) => {
   }
   // Eliminamos el producto de la DB
   await productService.deleteByID(pid)
+  // Si el producto era de un usuario premium, le enviamos un email
+  await sendDeletedProductEmail(product.owner, product.name)
   res.send(`Producto con codigo ${pid} eliminado con exito`)
 }
 

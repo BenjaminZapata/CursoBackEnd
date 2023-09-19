@@ -1,0 +1,25 @@
+<section>
+  <img src={{this.profile_photo}} width="120px" height="120px">
+  <br>
+  <h2>{{this.email}}</h2>
+  <form id="deleteAccount">
+    <button>Eliminar cuenta</button>
+  </form>
+  <h3>Mongo ID: {{this._id}}</h3>
+  <h3>Ultima conexión: {{this.ultima_conexion}}</h3>
+  <h3>{{this.age}} años - Rol: {{this.role}}</h3>
+  <form id="handleRole">
+    <label>Cambiar rol</label>
+    <select name="role" id="role">
+      <option value="admin">Admin</option>
+      <option value="premium">Premium</option>
+      <option value="user">User</option>
+    </select>
+    <button>Cambiar</button>
+  </form>
+  <br>
+
+  <a href="/api/products"><button>Volver</button></a>
+</section>
+
+<script src="/profileTools.js" userEmail="{{this.email}}" id="{{this._id}}"></script>

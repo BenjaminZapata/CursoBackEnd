@@ -10,6 +10,10 @@ export default class UserService {
     this.userDao = await PersistenceFactory.getUserPersistence()
   }
 
+  getUsers = async () => {
+    return await this.userDao.getUsers()
+  }
+
   getById = async (id) => {
     return await this.userDao.getById(id)
   }
@@ -20,6 +24,10 @@ export default class UserService {
 
   create = async (user) => {
     return await this.userDao.create(user)
+  }
+
+  deleteById = async (id) => {
+    return await this.userDao.deleteById(id)
   }
 
   updateById = async (id, user) => {

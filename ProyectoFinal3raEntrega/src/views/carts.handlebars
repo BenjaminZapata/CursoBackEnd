@@ -1,6 +1,7 @@
 <nav style="display: flex; align-items: center; gap: 1em;">
   <h1>Bienvenido, {{user.role}} <a href="/api/users/profile" style="color: #464646 !important; text-decoration: none !important;" title="Ir al perfil">{{user.email}}</a></h1>
   <button onclick="logout()">Logout</button>
+  <button onclick="window.location.href='http://localhost:8080/api/carts/1'">Ver carrito</button>
 </nav>
 <section>
   <h2>Cart #{{id}}</h2>
@@ -18,6 +19,10 @@
       <input name="codigo">
       <button type="submit">Agregar</button>
     </form>
+    <br>
+    <button onclick="window.location.href='http://localhost:8080/api/carts/{{id}}/purchase'">Finalizar compra</button>
+    <br>
+    <br>
     <a href="/api/products"><button>Volver</button></a>
   </footer>
 </section>

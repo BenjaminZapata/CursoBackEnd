@@ -4,6 +4,7 @@ import express from "express"
 import handlebars from "express-handlebars"
 import session from "express-session"
 import passport from "passport"
+import cors from "cors"
 // config imports
 import { __dirname } from "./utils/utils.js"
 import { initializePassport } from "./config/passport.config.js"
@@ -36,6 +37,7 @@ server.use(session({
   resave: true,
   saveUninitialized: true
 }))
+server.use(cors())
 server.use(express.json())
 server.use(express.urlencoded({ extended: true }))
 server.use(express.static(__dirname + '/public'))

@@ -21,3 +21,6 @@ export const generateRandomID = () => {
 export const generateTimestamp = () => {
   return Date.now()
 }
+
+export const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']

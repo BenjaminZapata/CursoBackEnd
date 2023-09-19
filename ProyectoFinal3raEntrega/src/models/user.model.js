@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose"
+import { generateTimestamp } from "../utils/utils.js"
 
 const userSchema = mongoose.Schema({
   email: String,
@@ -18,7 +19,10 @@ const userSchema = mongoose.Schema({
       reference: String
     }
   }],
-  last_connection: String,
+  last_connection: {
+    type: Number,
+    default: generateTimestamp()
+  },
   profile_photo: {
     type: String,
     default: '/profiles/user.jpg'

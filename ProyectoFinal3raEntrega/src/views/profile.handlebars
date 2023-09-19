@@ -1,9 +1,10 @@
 <nav style="display: flex; align-items: center; gap: 1em;">
   <h1>Bienvenido, {{this.role}} {{this.email}}</h1>
   <button onclick="logout()">Logout</button>
+  <button onclick="window.location.href='http://localhost:8080/api/carts/1'">Ver carrito</button>
 </nav>
 <section>
-  <img src={{this.profile_photo}}>
+  <img src={{this.profile_photo}} width="120px" height="120px">
   <br>
   <a href="/api/users/updateProfilePhoto"><small>Cambiar foto de perfil</small></a>
   <h2>{{this.email}}</h2>

@@ -8,7 +8,7 @@ addEventListener("submit", e => {
     return
   }
   const xhr = new XMLHttpRequest()
-  xhr.open("POST", `http://127.0.0.1:8080/api/carts/${id}/product/${q}`)
+  xhr.open("POST", `http://localhost:8080/api/carts/${id}/product/${q}`)
   xhr.send()
   setTimeout(() => location.reload(), 1000)
 })
